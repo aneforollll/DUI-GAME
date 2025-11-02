@@ -1,0 +1,40 @@
+/*
+ * ITCS215 - Module 1 Assignment (Section 3)
+ * Main Class: CharacterBrowserGUI
+ *
+ * This class handles the main window, user input, and calls
+ * the CharacterBrowser logic class to do the actual work.
+ */
+
+// The main logic handler
+CharacterBrowser browser;
+
+void setup() {
+  size(1280, 720); // Or whatever size you prefer
+  
+  // Initialize the character browser logic
+  browser = new CharacterBrowser();
+  
+  // Load all character data
+  // You need to implement this loading logic in your CharacterBrowser class
+  browser.loadCharacters(); 
+}
+
+void draw() {
+  background(50); // Dark grey background
+  
+  // Tell the browser logic to update and render everything
+  browser.update();
+  browser.render();
+}
+
+// Section 3 Requirement: Handle two-character selection
+void mousePressed() {
+  if (mouseButton == LEFT) {
+    // [Source 335] Allow Left mouse button to select first character
+    browser.selectMainCharacter(mouseX, mouseY);
+  } else if (mouseButton == RIGHT) {
+    // [Source 335] Allow Right mouse button to select second character as a partner
+    browser.selectPartnerCharacter(mouseX, mouseY);
+  }
+}

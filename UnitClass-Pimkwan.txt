@@ -1,0 +1,114 @@
+/*
+ * [Activity-2]: Unit Class
+ *
+ * Represents a single character with animations, health, and taunts.
+ */
+ 
+class Unit {
+  
+  // Activity 2: Core properties
+  SpritePlayer idleSprite;
+  SpritePlayer teaserSprite;
+  SpritePlayer attackSprite; // and any other animations
+  
+  float health; // [Source 281]
+  String unitName;
+  PImage portrait; // [Source 296]
+  
+  // Activity 3: Animation state
+  SpritePlayer currentSprite;
+  boolean playingTeaser;
+  
+  // Section 3: Taunting system
+  String[] genericTaunts = new String[5]; // [Source 328]
+  String[] specificTaunts = new String[4]; // [Source 328]
+  
+  String currentTaunt = "";
+  int tauntTimer = 0; // Timer to control fade out
+  final int TAUNT_DURATION = 180; // 3 seconds at 60fps [Source 328]
+  
+  Unit(String configPath) {
+    // TODO: Load all unit data from the text file [Source 285]
+    // This includes health, name, portrait, and sprite configs
+    
+    // Example:
+    // health = 100;
+    // portrait = loadImage("warrior_portrait.png");
+    // idleSprite = new SpritePlayer("warrior_idle_config.txt");
+    // teaserSprite = new SpritePlayer("warrior_teaser_config.txt");
+    // teaserSprite.setLoop(false); // [Source 249] Teaser plays once
+    
+    // currentSprite = teaserSprite; // [Source 296] Start with teaser
+    // playingTeaser = true;
+    
+    // [Source 328] Load taunts
+    // genericTaunts[0] = "I will win!";
+    // ...
+    // specificTaunts[0] = "With you by my side!";
+    // ...
+  }
+  
+  void update() {
+    // [Source 296] After teaser, default to idle
+    if (playingTeaser && !teaserSprite.isPlaying()) {
+      playingTeaser = false;
+      currentSprite = idleSprite;
+      currentSprite.play();
+    }
+    
+    // Update the current animation
+    if (currentSprite != null) {
+      currentSprite.update();
+    }
+    
+    // Update taunt timer
+    if (tauntTimer > 0) {
+      tauntTimer--;
+    }
+  }
+  
+  void render(float x, float y) {
+    // Draw the unit's animation
+    if (currentSprite != null) {
+      // currentSprite.render(x, y);
+    } else {
+      // Or draw portrait if no sprite
+      // image(portrait, x, y);
+    }
+    
+    // [Source 282] Draw health bar
+    drawHealthBar(x, y);
+    
+    // [Source 328] Draw taunt text
+    if (tauntTimer > 0) {
+      drawTaunt(x, y);
+    }
+  }
+  
+  void drawHealthBar(float x, float y) {
+    // TODO: Draw a health bar above the sprite
+    // e.g., fill(255,0,0); rect(x, y - 20, 100, 10);
+    // fill(0,255,0); rect(x, y - 20, health, 10);
+  }
+  
+  void drawTaunt(float x, float y) {
+    // [Source 328] Display text and fade it out
+    // Calculate alpha based on timer
+    float alpha = map(tauntTimer, 0, TAUNT_DURATION, 0, 255);
+    fill(255, alpha); // White text, fades out
+    textAlign(CENTER);
+    text(currentTaunt, x + 50, y - 50); // Position text above unit
+  }
+  
+  // [Source 328] Method to speak a taunt
+  void speak(String type) {
+    if (type.equals("specific")) {
+      int i = int(random(specificTaunts.length));
+      currentTaunt = specificTaunts[i];
+    } else { // "generic"
+      int i = int(random(genericTaunts.length));
+      currentTaunt = genericTaunts[i];
+    }
+    tauntTimer = TAUNT_DURATION; // Reset timer
+  }
+}
