@@ -1,87 +1,152 @@
-// --- Character Selection Example ---
+// --- Character Selection (Pick 2 to Start) ---
 
-// Variables to hold character data
-PImage knight, wizard;
-String selectedCharacter = ""; // stores which character is chosen
+PImage knight, wizard, archer; // add as many characters as you like
+String[] selected = new String[2]; // store up to 2 chosen characters
+boolean gameStarted = false;
 
-// Button areas
-int knightX = 150, knightY = 200;
-int wizardX = 450, wizardY = 200;
+// Character button positions
 int charSize = 150;
+int gap = 200;
 
-boolean gameStarted = false; // flag to move to next screen
+CharacterButton[] buttons;
 
 void setup() {
   size(800, 600);
   
-  // Load your character images
-  // (replace these with your own image files in the 'data' folder)
-  knight = loadImage("knight.png");
-  wizard = loadImage("wizard.png");
+  // Load character images from /data folder
+  knight = loadImage("knight.jpg");
+  wizard = loadImage("wizard.jpg");
+  archer = loadImage("archer.jpg ");
+  
+  // Create character buttons
+  buttons = new CharacterButton[3];
+  buttons[0] = new CharacterButton("Knight", knight, 150, 200);
+  buttons[1] = new CharacterButton("Wizard", wizard, 350, 200);
+  buttons[2] = new CharacterButton("Archer", archer, 550, 200);
 }
 
 void draw() {
   background(40, 50, 70);
-
+  
   if (!gameStarted) {
-    showCharacterSelection();
+    showSelectionScreen();
   } else {
     startGame();
   }
 }
 
-void showCharacterSelection() {
+void showSelectionScreen() {
   fill(255);
   textAlign(CENTER);
   textSize(32);
-  text("Choose Your Character", width/2, 80);
-
-  // Draw Knight
-  image(knight, knightX, knightY, charSize, charSize);
-  fill(200);
-  text("Knight", knightX + charSize/2, knightY + charSize + 30);
-
-  // Draw Wizard
-  image(wizard, wizardX, wizardY, charSize, charSize);
-  fill(200);
-  text("Wizard", wizardX + charSize/2, wizardY + charSize + 30);
-
-  // Highlight selection
-  noFill();
-  stroke(255, 255, 0);
-  strokeWeight(4);
-  if (selectedCharacter.equals("Knight")) {
-    rect(knightX - 5, knightY - 5, charSize + 10, charSize + 10);
-  } else if (selectedCharacter.equals("Wizard")) {
-    rect(wizardX - 5, wizardY - 5, charSize + 10, charSize + 10);
+  text("Select 2 Characters", width/2, 80);
+  
+  // Draw buttons
+  for (CharacterButton b : buttons) {
+    b.display();
+  }
+  
+  // Show selected list
+  textSize(20);
+  textAlign(LEFT);
+  fill(255);
+  text("Selected: " + join(selected, ", "), 50, 500);
+  
+  // If two characters chosen, show start button
+  if (selected[0] != null && selected[1] != null) {
+    fill(0, 200, 0);
+    rect(width/2 - 75, 520, 150, 50, 10);
+    fill(255);
+    textAlign(CENTER);
+    text("Start Game", width/2, 552);
   }
 }
 
 void mousePressed() {
-  // Check if knight was clicked
-  if (mouseX > knightX && mouseX < knightX + charSize &&
-      mouseY > knightY && mouseY < knightY + charSize) {
-    selectedCharacter = "Knight";
+  if (!gameStarted) {
+    // Check if a character button was clicked
+    for (CharacterButton b : buttons) {
+      if (b.isClicked(mouseX, mouseY)) {
+        selectCharacter(b.name);
+      }
+    }
+    
+    // Start button pressed
+    if (selected[0] != null && selected[1] != null) {
+      if (mouseX > width/2 - 75 && mouseX < width/2 + 75 &&
+          mouseY > 520 && mouseY < 570) {
+        gameStarted = true;
+      }
+    }
   }
+}
 
-  // Check if wizard was clicked
-  if (mouseX > wizardX && mouseX < wizardX + charSize &&
-      mouseY > wizardY && mouseY < wizardY + charSize) {
-    selectedCharacter = "Wizard";
+void selectCharacter(String name) {
+  // Prevent duplicates
+  if ((selected[0] != null && selected[0].equals(name)) || 
+      (selected[1] != null && selected[1].equals(name))) {
+    // Deselect if clicked again
+    if (selected[0] != null && selected[0].equals(name)) selected[0] = null;
+    if (selected[1] != null && selected[1].equals(name)) selected[1] = null;
+    cleanArray();
+    return;
   }
+  
+  // Add to selection
+  if (selected[0] == null) {
+    selected[0] = name;
+  } else if (selected[1] == null) {
+    selected[1] = name;
+  }
+}
 
-  // If a character is selected, go to next screen after click
-  if (selectedCharacter != "") {
-    delay(300);
-    gameStarted = true;
+// Simple method to compact array after deselection
+void cleanArray() {
+  if (selected[0] == null && selected[1] != null) {
+    selected[0] = selected[1];
+    selected[1] = null;
   }
 }
 
 void startGame() {
-  background(20, 100, 50);
+  background(20, 120, 60);
   fill(255);
   textAlign(CENTER);
-  textSize(28);
-  text("You chose: " + selectedCharacter, width/2, height/2);
-  text("Game Starting...", width/2, height/2 + 50);
+  textSize(30);
+  text("Game Starting!", width/2, 100);
+  text("Team: " + selected[0] + " & " + selected[1], width/2, 180);
+}
+
+// --- Helper class for character buttons ---
+class CharacterButton {
+  String name;
+  PImage img;
+  int x, y;
+  boolean char_selected = false;
+  
+  CharacterButton(String n, PImage i, int x, int y) {
+    name = n;
+    img = i;
+    this.x = x;
+    this.y = y;
+  }
+  
+  void display() {
+    image(img, x, y, charSize, charSize);
+    fill(200);
+    textAlign(CENTER);
+    text(name, x + charSize/2, y + charSize + 25);
+    
+    // Highlight if selected
+    if (name.equals(selected[0]) || name.equals(selected[1])) {
+      noFill();
+      stroke(255, 255, 0);
+      strokeWeight(4);
+      rect(x - 5, y - 5, charSize + 10, charSize + 10);
+    }
+  }
+  
+  boolean isClicked(int mx, int my) {
+    return mx > x && mx < x + charSize && my > y && my < y + charSize;
+  }
 }
