@@ -6,12 +6,14 @@
  */
 
 // An enumeration to track the unit's animation state
-enum AnimationState {
+enum AnimationState 
+{
   IDLE,
   TEASER
 }
 
-class Unit {
+class Unit 
+{
   
   // --- Portrait Properties ---
   float portraitX, portraitY;
@@ -25,30 +27,50 @@ class Unit {
   int teaserDuration = 2000; // Teaser animation plays for 2 seconds
   
   // --- Unit Data ---
-  String tauntMessage;
+  ArrayList<String> taunts;
+  String currentTaunt;
   String unitName;
 
   // Constructor
-  Unit(float px, float py, String taunt, String name) {
+  Unit(float px, float py, String name) 
+  {
     this.portraitX = px;
     this.portraitY = py;
     this.portraitWidth = 120;
     this.portraitHeight = 120;
     
-    this.tauntMessage = taunt;
     this.unitName = name;
+    
+    this.taunts = new ArrayList<String>();
+    this.currentTaunt = "";
     
     this.currentState = AnimationState.IDLE;
     // this.portraitImage = loadImage("path/to/" + name + "_portrait.png");
     // (Load animation frames here)
   }
   
+  void addTaunt(String taunt)
+  {
+    taunts.add(taunt);
+  }
+  
   /**
    * Called by the logic class to start the teaser animation.
    */
-  void playTeaser() {
+  void playTeaser() 
+  {
     currentState = AnimationState.TEASER;
     teaserStartTime = millis(); // Get the current time
+    
+    if (taunts.size() > 0)
+    {
+      int tauntIndex = int(random(taunts.size()));
+      currentTaunt = taunts.get(tauntIndex);
+    }
+    else
+    {
+      currentTaunt = "I speak no such thing.";
+    }
   }
 
   /**
@@ -120,11 +142,14 @@ class Unit {
   /**
    * Draws the unit's taunt message above its animation.
    */
-  void drawTaunt(float animX, float animY) {
+  void drawTaunt(float animX, float animY) 
+  {
+    if (currentTaunt == null || currentTaunt.isEmpty()) {return;}
+    
     fill(255);
     textSize(16);
     textAlign(CENTER, BOTTOM);
     // Draw text above the animation (e.g., above the circle's top)
-    text(tauntMessage, animX, animY - 100);
+    text(currentTaunt, animX, animY - 100);
   }
 }
