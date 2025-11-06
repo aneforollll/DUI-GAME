@@ -1,8 +1,7 @@
 /**
  * Unit (Data Class)
- * * Represents a single character. This class manages its own
- * state (idle, teaser), animation timing, portrait,
- * and taunt message.
+ * * Represents a single character. This class now manages
+ * Sprites for animations and a single PImage for the portrait.
  */
 
 // An enumeration to track the unit's animation state
@@ -14,15 +13,15 @@ enum AnimationState
 
 class Unit 
 {
-  
   // --- Portrait Properties ---
-  float portraitX, portraitY;
-  float portraitWidth, portraitHeight;
+  float portraitX, portraitY; // Position of the portrait
+  PImage portraitImage;     // <-- Static portrait image
+  float portraitScale = 1.0; // <-- Scale for the portrait
   
   // --- Animation Properties ---
+  Sprite idleSprite;
+  Sprite teaserSprite;
   AnimationState currentState;
-  int teaserStartTime;
-  int teaserDuration = 3000; // Teaser animation plays for 3 seconds
   
   // --- Unit Data ---
   ArrayList<String> taunts;
@@ -32,17 +31,37 @@ class Unit
   // Constructor
   Unit(float px, float py, String name) 
   {
-    this.portraitX = px;
-    this.portraitY = py;
-    this.portraitWidth = 120;
-    this.portraitHeight = 120;
-    
     this.unitName = name;
+    this.portraitX = px; // Store the portrait's position
+    this.portraitY = py;
     
     this.taunts = new ArrayList<String>();
     this.currentTaunt = "";
-    
     this.currentState = AnimationState.IDLE;
+    
+    // Create sprites (but don't load images yet)
+    idleSprite = new Sprite(name + "_idle.txt");
+    teaserSprite = new Sprite(name + "_teaser.txt");
+    
+    // Set looping properties
+    idleSprite.isLoop = true;
+    teaserSprite.isLoop = false; // Teaser plays once
+    
+    // Start idle animation by default
+    idleSprite.play();
+  }
+  
+  /**
+   * Loads the actual image data for all sprites.
+   * This MUST be called from the main setup().
+   */
+  void loadSpriteImages() {
+    // Load the static portrait from "data/[charactername]/portrait.png"
+    portraitImage = loadImage(unitName + "/portrait.png");
+    
+    // Load the animation sprites
+    idleSprite.loadImageData();
+    teaserSprite.loadImageData();
   }
 
   /**
@@ -57,7 +76,10 @@ class Unit
    */
   void playTeaser() {
     currentState = AnimationState.TEASER;
-    teaserStartTime = millis(); // Get the current time
+    
+    idleSprite.stop();
+    teaserSprite.reset();
+    teaserSprite.play();
     
     if (taunts.size() > 0) {
       int tauntIndex = int(random(taunts.size()));
@@ -67,22 +89,26 @@ class Unit
     }
   }
 
-  // --- NEW FUNCTION ---
   /**
    * Immediately stops the teaser animation and clears the taunt.
    */
   void stopTeaser() {
     currentState = AnimationState.IDLE;
     currentTaunt = "";
+    
+    teaserSprite.stop();
+    idleSprite.reset();
+    idleSprite.play();
   }
 
   /**
    * Called every frame by the logic class.
+   * Checks if the teaser animation is finished.
    */
   void update() {
     if (currentState == AnimationState.TEASER) {
-      if (millis() - teaserStartTime > teaserDuration) {
-        currentState = AnimationState.IDLE;
+      if (teaserSprite.isFinished()) {
+        stopTeaser();
       }
     }
   }
@@ -91,21 +117,25 @@ class Unit
    * Checks if a mouse click is over this unit's portrait.
    */
   boolean isMouseOverPortrait(int mx, int my) {
-    return (mx >= portraitX && mx <= portraitX + portraitWidth &&
-            my >= portraitY && my <= portraitY + portraitHeight);
+    if (portraitImage == null) return false;
+    
+    float w = (portraitImage.width * portraitScale) / 2;
+    float h = (portraitImage.height * portraitScale) / 2;
+    
+    return (mx >= portraitX - w && mx <= portraitX + w &&
+            my >= portraitY - h && my <= portraitY + h);
   }
 
   /**
-   * Draws the unit's portrait in the selection grid.
+   * Draws the unit's static portrait in the selection grid.
    */
   void drawPortrait() {
-    stroke(255);
-    fill(100);
-    rect(portraitX, portraitY, portraitWidth, portraitHeight);
+    if (portraitImage == null) return;
     
-    fill(255);
-    textAlign(CENTER, CENTER);
-    text(unitName, portraitX + portraitWidth / 2, portraitY + portraitHeight / 2);
+    imageMode(CENTER);
+    image(portraitImage, portraitX, portraitY, 
+          portraitImage.width * portraitScale, 
+          portraitImage.height * portraitScale);
   }
 
   /**
@@ -113,18 +143,9 @@ class Unit
    */
   void drawAnimation(float x, float y) {
     if (currentState == AnimationState.TEASER) {
-      fill(255, 200, 0); // Yellow
-      circle(x, y, 150);
-      fill(0);
-      textAlign(CENTER, CENTER);
-      text("TEASER ANIMATION", x, y);
-      
-    } else { // IDLE state
-      fill(0, 150, 255); // Blue
-      circle(x, y, 120);
-      fill(255);
-      textAlign(CENTER, CENTER);
-      text("IDLE ANIMATION", x, y);
+      teaserSprite.renderNext(x, y);
+    } else {
+      idleSprite.renderNext(x, y);
     }
   }
 
@@ -136,7 +157,6 @@ class Unit
       return; 
     }
     
-    // Only draw the generic taunt IF we are in the teaser state.
     if (currentState == AnimationState.TEASER) {
       fill(255); // White color
       textSize(16);

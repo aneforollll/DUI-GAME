@@ -1,8 +1,8 @@
 /**
  * CharacterBrowser (Logic Class)
  * * This class handles the core logic of the character browser.
- * It now loads from "specialTaunt.txt" and triggers the
- * special taunt immediately on selection.
+ * It now prevents the same character from being
+ * selected as both Main and Partner.
  */
 
 import java.util.ArrayList;
@@ -40,6 +40,8 @@ class CharacterBrowser
   Unit mainCharacter;
   Unit partnerCharacter;
   
+  boolean isLoading = true; // Flag to show loading screen
+  
   // --- Team Taunt Variables ---
   HashMap<String, ArrayList<TeamTaunt>> teamTaunts;
   TeamTaunt currentTeamTaunt = null;
@@ -48,7 +50,7 @@ class CharacterBrowser
   
   // --- Timing for the conversation ---
   int delaySpeaker1 = 500;
-  int durationSpeaker1 = 2000;
+  int durationSpeaker1 = 3000;
   int delaySpeaker2 = 300;
   int durationSpeaker2 = 3000;
   
@@ -65,6 +67,18 @@ class CharacterBrowser
   }
   
   /**
+   * Called by the main GUI thread to load all sprite images.
+   */
+  void loadAllSpriteImages() {
+    println("--- Threaded image loading started... ---");
+    for (Unit unit : units) {
+      unit.loadSpriteImages();
+    }
+    println("--- Image loading finished. ---");
+    isLoading = false;
+  }
+  
+  /**
    * Populates the list of available units from genericTaunt.txt
    */
   void loadUnits() {
@@ -74,7 +88,10 @@ class CharacterBrowser
       return;
     }
     
-    float currentX = 100, currentY = 100, padding = 30, portraitSize = 120;
+    float currentX = 100;
+    float currentY = 100;
+    float padding = 30;
+    float portraitSize = 120;
     
     for (String line : lines) {
       if (line == null || line.trim().isEmpty()){ continue; }
@@ -89,6 +106,7 @@ class CharacterBrowser
         unit = new Unit(currentX, currentY, name);
         unitMap.put(name, unit);
         units.add(unit);
+        
         currentX += portraitSize + padding;
         if (currentX + portraitSize > width -100) {
           currentX = 100;
@@ -149,45 +167,38 @@ class CharacterBrowser
     }
   }
   
-  // --- THIS FUNCTION IS HEAVILY MODIFIED ---
   /**
    * Handles the input event from the main GUI.
-   * This now triggers the special taunt immediately.
    */
   void handleMouseClick(int mx, int my, int button) 
   {
+    if (isLoading) return;
+    
     for (Unit unit : units) {
       if (unit.isMouseOverPortrait(mx, my)) {
         
-        // 1. Set the selected character
         if (button == LEFT) {
+          if (unit == partnerCharacter) { return; }
           mainCharacter = unit;
         } else if (button == RIGHT) {
+          if (unit == mainCharacter) { return; }
           partnerCharacter = unit;
         }
         
-        // 2. Check if we have a full team
         if (mainCharacter != null && partnerCharacter != null) {
-          // --- FULL TEAM: START SPECIAL TAUNT ---
-          
-          // Stop any generic taunts that might be playing
           mainCharacter.stopTeaser();
           partnerCharacter.stopTeaser();
           
-          // Find the new taunt
           currentTeamTaunt = findTeamTaunt();
           
           if (currentTeamTaunt != null) {
-            // Start the sequence
             teamTauntState = TeamTauntState.SPEAKER_1_DELAY;
             teamTauntTimer = millis();
           } else {
-            // No taunt for this pair
             teamTauntState = TeamTauntState.DONE;
             currentTeamTaunt = null;
           }
         } else {
-          // --- NOT A FULL TEAM: PLAY GENERIC TAUNT ---
           unit.playTeaser();
           teamTauntState = TeamTauntState.IDLE;
           currentTeamTaunt = null;
@@ -221,7 +232,6 @@ class CharacterBrowser
       drawCharacterName(partnerCharacter, partnerAnimX, animY);
     }
     
-    // --- Draw GUI Labels ---
     fill(255);
     textSize(20);
     textAlign(CENTER);
@@ -233,19 +243,15 @@ class CharacterBrowser
     
     drawSelectionBox();
     
-    // --- Team Taunt Logic ---
     updateTeamTauntState();
     drawTeamTaunt(mainAnimX, partnerAnimX, animY);
   }
 
-  // --- THIS FUNCTION IS MODIFIED ---
   /**
    * This is the core logic for the conversation.
-   * It no longer checks for generic taunts, just runs the timer.
    */
   void updateTeamTauntState() {
     
-    // The state machine now runs based on timers started in handleMouseClick()
     switch (teamTauntState) {
       case SPEAKER_1_DELAY:
         if (millis() - teamTauntTimer > delaySpeaker1) {
@@ -320,7 +326,6 @@ class CharacterBrowser
     text(text, xPos, y - 100);
   }
 
-  // --- NEW HELPER FUNCTION ---
   /**
    * Finds a random team taunt for the currently selected pair.
    */
@@ -390,18 +395,12 @@ class CharacterBrowser
     }
   }
   
+  // --- THIS FUNCTION IS MODIFIED ---
   void drawUnitInBox(Unit unit, float x, float y, float size) {
-    stroke(255);
-    fill(100);
-    rect(x, y, size, size);
-    
-    fill(255);
-    textAlign(CENTER, CENTER);
-    if (unit.unitName.length() > 8) {
-      textSize(12);
-    } else {
-      textSize(14);
+    if (unit != null && unit.portraitImage != null) {
+      imageMode(CENTER);
+      // Draw the static PImage, scaled to fit the box
+      image(unit.portraitImage, x + size/2, y + size/2, size, size);
     }
-    text(unit.unitName, x + size / 2, y + size / 2);
   }
 }

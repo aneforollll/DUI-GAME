@@ -14,19 +14,40 @@ void setup() {
   // Initialize the main logic controller
   characterBrowser = new CharacterBrowser();
   
-  // (In a real app, you would load assets here and pass them to the browser)
+  // --- MODIFIED ---
+  // Instead of loading images here, we start a new thread
+  // to load them in the background. This prevents the "Not Responding" error.
+  thread("loadAllSpriteImages_Threaded");
 }
 
 void draw() {
   // Clear the screen every frame
   background(50); // Dark grey background
   
-  // Tell the character browser to update its logic and render everything
-  characterBrowser.render();
+  // --- MODIFIED ---
+  // Check if the characterBrowser is still loading images
+  if (characterBrowser.isLoading) {
+    // If loading, show a loading screen
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textSize(32);
+    text("Loading Sprites...", width/2, height/2);
+  } else {
+    // If done, run the app normally
+    characterBrowser.render();
+  }
 }
 
 void mousePressed() {
   // Pass the mouse click event to the logic handler
-  // It will determine what to do based on the button (LEFT or RIGHT)
   characterBrowser.handleMouseClick(mouseX, mouseY, mouseButton);
+}
+
+/**
+ * --- NEW FUNCTION ---
+ * This function is automatically called by thread("loadAllSpriteImages_Threaded")
+ * It runs on a separate, background thread.
+ */
+void loadAllSpriteImages_Threaded() {
+  characterBrowser.loadAllSpriteImages();
 }
