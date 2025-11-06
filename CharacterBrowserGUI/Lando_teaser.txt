@@ -1,5 +1,1 @@
-<<<<<<< Updated upstream
-Lando teaser frame_ .png 12 2
-=======
 Lando teaser frame_ .png 13 2
->>>>>>> Stashed changes

@@ -1,5 +1,1 @@
-<<<<<<< Updated upstream
-Carlos idle frame_ .png 8 2
-=======
 Carlos idle frame_ .png 7 2
->>>>>>> Stashed changes

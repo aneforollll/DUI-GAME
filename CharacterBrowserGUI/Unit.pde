@@ -54,7 +54,7 @@ class Unit
   /**
    * Loads the actual image data for all sprites.
    * This MUST be called from the main setup().
-   */
+   S*/
   void loadSpriteImages() {
     // Load the static portrait from "data/[charactername]/portrait.png"
     portraitImage = loadImage(unitName + "/portrait.png");
@@ -107,11 +107,7 @@ class Unit
    */
   void update() {
     if (currentState == AnimationState.TEASER) {
-<<<<<<< Updated upstream
       if (teaserSprite.isFinished()) {
-=======
-      if (teaserSprite != null && teaserSprite.isFinished()) {
->>>>>>> Stashed changes
         stopTeaser();
       }
     }
@@ -132,14 +128,17 @@ class Unit
 
   /**
    * Draws the unit's static portrait in the selection grid.
+   * --- THIS IS THE FIX ---
+   * It no longer draws a grey rect() behind the image.
    */
   void drawPortrait() {
     if (portraitImage == null) return;
     
+    float w = portraitImage.width * portraitScale;
+    float h = portraitImage.height * portraitScale;
+    
     imageMode(CENTER);
-    image(portraitImage, portraitX, portraitY, 
-          portraitImage.width * portraitScale, 
-          portraitImage.height * portraitScale);
+    image(portraitImage, portraitX, portraitY, w, h);
   }
 
   /**

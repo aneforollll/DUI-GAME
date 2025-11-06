@@ -10,32 +10,22 @@ CharacterBrowser characterBrowser;
 
 void setup() {
   size(1280, 720);
-<<<<<<< Updated upstream
   
-=======
-  frameRate(8);
->>>>>>> Stashed changes
+  frameRate(30); // <-- CHANGED: Increased for smoother animation
+  
   // Initialize the main logic controller
   characterBrowser = new CharacterBrowser();
   
   // --- MODIFIED ---
-  // Instead of loading images here, we start a new thread
-  // to load them in the background. This prevents the "Not Responding" error.
-<<<<<<< Updated upstream
-=======
-  delay(200);
->>>>>>> Stashed changes
+  // delay(200); // <-- REMOVED: This delay is not needed and can freeze the app
   thread("loadAllSpriteImages_Threaded");
 }
 
 void draw() {
-  // Clear the screen every frame
-  background(50); // Dark grey background
-  
-  // --- MODIFIED ---
   // Check if the characterBrowser is still loading images
   if (characterBrowser.isLoading) {
-    // If loading, show a loading screen
+    // If loading, show a dark background and loading screen
+    background(50); // <-- ADDED: Ensure loading screen has background
     fill(255);
     textAlign(CENTER, CENTER);
     textSize(32);
@@ -53,7 +43,7 @@ void mousePressed() {
 
 /**
  * --- NEW FUNCTION ---
- * This function is automatically called by thread("loadAllSpriteImages_Threaded")
+ * This function is automatically called by thread()
  * It runs on a separate, background thread.
  */
 void loadAllSpriteImages_Threaded() {

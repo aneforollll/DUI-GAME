@@ -1,5 +1,1 @@
-<<<<<<< Updated upstream
-Lando idle frame_ .png 8 2
-=======
 Lando idle frame_ .png 17 2
->>>>>>> Stashed changes

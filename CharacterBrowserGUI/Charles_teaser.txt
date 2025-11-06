@@ -1,5 +1,1 @@
-<<<<<<< Updated upstream
-Charles teaser frame_ .png 13 2
-=======
 Charles teaser frame_ .png 6 2
->>>>>>> Stashed changes
