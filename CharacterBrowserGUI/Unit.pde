@@ -18,13 +18,11 @@ class Unit
   // --- Portrait Properties ---
   float portraitX, portraitY;
   float portraitWidth, portraitHeight;
-  // PImage portraitImage; // (Uncomment to use a real image)
   
   // --- Animation Properties ---
-  // (In a real app, these would be PImage[] arrays for animation frames)
   AnimationState currentState;
   int teaserStartTime;
-  int teaserDuration = 2000; // Teaser animation plays for 2 seconds
+  int teaserDuration = 3000; // Teaser animation plays for 3 seconds
   
   // --- Unit Data ---
   ArrayList<String> taunts;
@@ -45,44 +43,45 @@ class Unit
     this.currentTaunt = "";
     
     this.currentState = AnimationState.IDLE;
-    // this.portraitImage = loadImage("path/to/" + name + "_portrait.png");
-    // (Load animation frames here)
   }
-  
-  void addTaunt(String taunt)
-  {
+
+  /**
+   * Adds a taunt to this unit's list of possible taunts.
+   */
+  void addTaunt(String taunt) {
     taunts.add(taunt);
   }
   
   /**
    * Called by the logic class to start the teaser animation.
    */
-  void playTeaser() 
-  {
+  void playTeaser() {
     currentState = AnimationState.TEASER;
     teaserStartTime = millis(); // Get the current time
     
-    if (taunts.size() > 0)
-    {
+    if (taunts.size() > 0) {
       int tauntIndex = int(random(taunts.size()));
       currentTaunt = taunts.get(tauntIndex);
+    } else {
+      currentTaunt = "I have no taunts!";
     }
-    else
-    {
-      currentTaunt = "I speak no such thing.";
-    }
+  }
+
+  // --- NEW FUNCTION ---
+  /**
+   * Immediately stops the teaser animation and clears the taunt.
+   */
+  void stopTeaser() {
+    currentState = AnimationState.IDLE;
+    currentTaunt = "";
   }
 
   /**
    * Called every frame by the logic class.
-   * This handles internal state logic, like animation timing.
    */
   void update() {
-    // If we are playing the teaser animation...
     if (currentState == AnimationState.TEASER) {
-      // ...check if enough time has passed.
       if (millis() - teaserStartTime > teaserDuration) {
-        // If so, switch back to the idle animation.
         currentState = AnimationState.IDLE;
       }
     }
@@ -100,9 +99,6 @@ class Unit
    * Draws the unit's portrait in the selection grid.
    */
   void drawPortrait() {
-    // (In a real app: image(portraitImage, portraitX, portraitY);)
-    
-    // Skeleton placeholder:
     stroke(255);
     fill(100);
     rect(portraitX, portraitY, portraitWidth, portraitHeight);
@@ -116,13 +112,7 @@ class Unit
    * Draws the unit's main animation at a specific screen location.
    */
   void drawAnimation(float x, float y) {
-    // This function draws the unit's animation based on its current state.
-    
-    // (In a real app, you would draw different animation frames here)
-    
-    // Skeleton placeholder:
     if (currentState == AnimationState.TEASER) {
-      // Draw a "teaser" placeholder
       fill(255, 200, 0); // Yellow
       circle(x, y, 150);
       fill(0);
@@ -130,7 +120,6 @@ class Unit
       text("TEASER ANIMATION", x, y);
       
     } else { // IDLE state
-      // Draw an "idle" placeholder
       fill(0, 150, 255); // Blue
       circle(x, y, 120);
       fill(255);
@@ -142,14 +131,17 @@ class Unit
   /**
    * Draws the unit's taunt message above its animation.
    */
-  void drawTaunt(float animX, float animY) 
-  {
-    if (currentTaunt == null || currentTaunt.isEmpty()) {return;}
+  void drawTaunt(float animX, float animY) {
+    if (currentTaunt == null || currentTaunt.isEmpty()) {
+      return; 
+    }
     
-    fill(255);
-    textSize(16);
-    textAlign(CENTER, BOTTOM);
-    // Draw text above the animation (e.g., above the circle's top)
-    text(currentTaunt, animX, animY - 100);
+    // Only draw the generic taunt IF we are in the teaser state.
+    if (currentState == AnimationState.TEASER) {
+      fill(255); // White color
+      textSize(16);
+      textAlign(CENTER, BOTTOM);
+      text(currentTaunt, animX, animY - 100);
+    }
   }
 }
