@@ -10,13 +10,21 @@ CharacterBrowser characterBrowser;
 
 void setup() {
   size(1280, 720);
+<<<<<<< Updated upstream
   
+=======
+  frameRate(8);
+>>>>>>> Stashed changes
   // Initialize the main logic controller
   characterBrowser = new CharacterBrowser();
   
   // --- MODIFIED ---
   // Instead of loading images here, we start a new thread
   // to load them in the background. This prevents the "Not Responding" error.
+<<<<<<< Updated upstream
+=======
+  delay(200);
+>>>>>>> Stashed changes
   thread("loadAllSpriteImages_Threaded");
 }
 

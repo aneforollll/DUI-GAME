@@ -107,7 +107,11 @@ class Unit
    */
   void update() {
     if (currentState == AnimationState.TEASER) {
+<<<<<<< Updated upstream
       if (teaserSprite.isFinished()) {
+=======
+      if (teaserSprite != null && teaserSprite.isFinished()) {
+>>>>>>> Stashed changes
         stopTeaser();
       }
     }
