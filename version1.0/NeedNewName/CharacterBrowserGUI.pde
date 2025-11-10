@@ -35,9 +35,28 @@ void draw() {
   }
 }
 
+// --- UPDATED to handle battle clicks ---
 void mousePressed() {
   if (currentScene.equals("browser")) {
     characterBrowser.handleMouseClick(mouseX, mouseY, mouseButton);
+  } 
+  else if (currentScene.equals("battle")) {
+    // --- NEW: Pass click to battle scene ---
+    battleScene.handleMouseClick(mouseX, mouseY);
+  }
+}
+
+// --- NEW: Added for the slider ---
+void mouseDragged() {
+  if (currentScene.equals("battle")) {
+    battleScene.handleMouseDrag(mouseX, mouseY);
+  }
+}
+
+// --- NEW: Added for the slider ---
+void mouseReleased() {
+  if (currentScene.equals("battle")) {
+    battleScene.handleMouseRelease();
   }
 }
 
