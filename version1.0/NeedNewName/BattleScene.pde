@@ -5,16 +5,16 @@ class BattleScene {
   boolean fadeInDone = false;
   PImage bgImage;
 
-  // Characters
+
   Unit mainCharacter;
   Unit partnerCharacter;
   Unit[] zombies;
 
-  // Positions
+
   PVector mainPos, partnerPos;
   PVector[] zombiePos;
   
-  // --- Debug Slider Variables ---
+
   float sliderX, sliderY, sliderW, sliderHandleX;
   boolean isDraggingSlider = false;
 
@@ -22,7 +22,7 @@ class BattleScene {
     this.mainCharacter = main;
     this.partnerCharacter = partner;
     
-    // Calculate max team health
+
     this.maxTeamHealth = 0;
     if (mainCharacter != null) {
       this.maxTeamHealth += mainCharacter.maxHealth;
@@ -32,11 +32,11 @@ class BattleScene {
     }
     this.teamHealth = this.maxTeamHealth; 
 
-    // Left side positions
+
     mainPos = new PVector(width * 0.2, height * 0.6);
     partnerPos = new PVector(width * 0.35, height * 0.6);
 
-    // Right side zombies
+
     zombies = new Unit[3];
     zombiePos = new PVector[3];
     float startX = width * 0.65;
@@ -50,22 +50,22 @@ class BattleScene {
       zombies[i].loadSpriteImages();
     }
 
-    // Load main and partner sprites
+
     mainCharacter.loadSpriteImages();
     partnerCharacter.loadSpriteImages();
 
-    // Load background
-    bgImage = loadImage("battle_bg.jpg"); // make sure this exists in /data
+
+    bgImage = loadImage("battle_bg.jpg"); 
     
-    // Initialize Slider Position
+
     sliderX = 20;
-    sliderY = 60; // Below the health bar
-    sliderW = 300; // Same width as bar
-    sliderHandleX = sliderX + sliderW; // Start at full
+    sliderY = 60; 
+    sliderW = 300; 
+    sliderHandleX = sliderX + sliderW; 
   }
 
   void render() {
-    // --- Fade-in effect ---
+   
     if (!fadeInDone) {
       fade += 10;
       if (fade >= 255) {
@@ -74,22 +74,22 @@ class BattleScene {
       }
     }
 
-    // --- Draw background ---
+
     if (bgImage != null) {
       imageMode(CORNER);
       image(bgImage, 0, 0, width, height);
     } else {
-      background(0); // fallback
+      background(0);
     }
 
-    // --- Draw zombies ---
+
     for (int i = 0; i < zombies.length; i++) {
       if (zombies[i] == null) continue;
       drawUnit(zombies[i], zombiePos[i].x, zombiePos[i].y, false);
       drawEnemyHealthBar(zombies[i], zombiePos[i].x, zombiePos[i].y - 180);
     }
 
-    // --- Draw main and partner characters ---
+
     if (mainCharacter != null) {
       drawUnit(mainCharacter, mainPos.x, mainPos.y, true);
     }
@@ -97,7 +97,7 @@ class BattleScene {
       drawUnit(partnerCharacter, partnerPos.x, partnerPos.y, true);
     }
     
-    // --- Recalculate team health ---
+
     this.teamHealth = 0;
     if (mainCharacter != null) {
       this.teamHealth += mainCharacter.currentHealth;
@@ -106,71 +106,69 @@ class BattleScene {
       this.teamHealth += partnerCharacter.currentHealth;
     }
     
-    // --- Draw GUI on top ---
+
     drawTeamHealthBar(); 
     drawDebugSlider();
 
-    // --- Optional fade overlay ---
+
     if (fade < 255) {
       fill(255, 255, 255, 255 - fade);
       rect(0, 0, width, height);
     }
   }
 
-  // --- Handle Mouse Click (for slider) ---
+
   void handleMouseClick(int mx, int my) {
-    // Check if click is on the slider handle
+
     float handleRadius = 10;
     if (abs(mx - sliderHandleX) < handleRadius && abs(my - sliderY) < handleRadius) {
       isDraggingSlider = true;
     }
   }
 
-  // --- Handle Mouse Drag (for slider) ---
+
   void handleMouseDrag(int mx, int my) {
     if (isDraggingSlider) {
-      // Move the handle
+
       sliderHandleX = constrain(mx, sliderX, sliderX + sliderW);
       
-      // Update health from slider position
+
       updateHealthFromSlider();
     }
   }
   
-  // --- Handle Mouse Release (for slider) ---
+
   void handleMouseRelease() {
     isDraggingSlider = false;
   }
   
-  // --- !! REVISED !! ---
-  // This function now updates BOTH player units
+ 
   void updateHealthFromSlider() {
-    // Calculate percentage (0.0 to 1.0)
+
     float percent = (sliderHandleX - sliderX) / sliderW;
     
-    // Set the main character's health
+
     if (mainCharacter != null) {
       mainCharacter.currentHealth = (int)(percent * mainCharacter.maxHealth);
     }
-    // Set the partner's health as well
+
     if (partnerCharacter != null) {
       partnerCharacter.currentHealth = (int)(percent * partnerCharacter.maxHealth);
     }
   }
 
-  // --- Draw the debug slider ---
+
   void drawDebugSlider() {
     rectMode(CORNER);
-    // Draw the track
     fill(80);
     noStroke();
     rect(sliderX, sliderY - 5, sliderW, 10, 5);
     
-    // Draw the handle
+
     if (isDraggingSlider) {
-      fill(255); // White
+      fill(255);
     } else {
-      fill(200); // Grey
+      fill(200); 
     }
     stroke(50);
     ellipse(sliderHandleX, sliderY, 20, 20);
@@ -194,7 +192,7 @@ class BattleScene {
     float barHeight = 20;
     
     float healthPercent = 0;
-    if (maxTeamHealth > 0) { // Avoid divide by zero
+    if (maxTeamHealth > 0) { 
       healthPercent = (float)teamHealth / maxTeamHealth;
     }
     healthPercent = constrain(healthPercent, 0, 1);
@@ -222,7 +220,7 @@ class BattleScene {
     float barY = y; 
     
     float healthPercent = 0;
-    if (enemy.maxHealth > 0) { // Avoid divide by zero
+    if (enemy.maxHealth > 0) { 
       healthPercent = (float)enemy.currentHealth / enemy.maxHealth;
     }
     healthPercent = constrain(healthPercent, 0, 1);

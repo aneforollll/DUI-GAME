@@ -13,8 +13,8 @@ class Sprite
   
   boolean finished;
   
-  // --- NEW ---
-  int unitHealth = 100; // Default health if not in config
+
+  int unitHealth = 100;
 
   public Sprite(String configFileName)
   {
@@ -46,7 +46,6 @@ class Sprite
     totalSize = int(configParameters[4]);
     spriteScale = int(configParameters[5]);
     
-    // --- NEW: Load Health ---
     if (configParameters.length >= 7) {
       unitHealth = int(configParameters[6]);
     } else {
@@ -54,7 +53,6 @@ class Sprite
     }
   }
   
-  // --- NEW: Getter for health ---
   int getUnitHealth() {
     return unitHealth;
   }
@@ -87,17 +85,14 @@ class Sprite
 
   void renderNext(float x, float y)
   {
-    // Safety guards
     if (sprites == null || totalSize <= 0) return;
     if (currentIndex < 0) currentIndex = 0;
     if (currentIndex >= totalSize) currentIndex = totalSize - 1;
 
-    // Draw current frame (if available)
     if (sprites[currentIndex] != null) {
       render(x, y);
     } 
 
-    // Advance frame AFTER rendering so first frame is shown
     if (!isStop) {
       currentIndex++;
 
@@ -105,10 +100,9 @@ class Sprite
         if (isLoop) {
           currentIndex = 0;
         } else {
-          // Hold at last frame and mark finished
           currentIndex = totalSize - 1;
           finished = true;
-          isStop = true;      // stop advancing further
+          isStop = true;
         }
       }
     }
