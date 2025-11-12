@@ -14,12 +14,12 @@ void setup() {
   frameRate(10);
   
 
-  File dlcFile = new File(dataPath("battle_start.mp3"));
+  File dlcFile = new File(dataPath("/DLC/battle_start.mp3"));
 
   if (dlcFile.exists()) {
 
     println("Battle transition 'DLC' found. Loading sound...");
-    battleStartSfx = new SoundFile(this, "battle_start.mp3");
+    battleStartSfx = new SoundFile(this, "/DLC/battle_start.mp3");
     
     if (battleStartSfx == null) {
 
