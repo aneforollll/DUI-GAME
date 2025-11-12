@@ -1,15 +1,8 @@
-/**
- * CharacterBrowser (Logic Class)
- * * This class handles the core logic of the character browser.
- * It now has a "Confirm" button to trigger special taunts.
- * Clicking a character only plays their generic taunt.
- */
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Arrays;
 
-// --- A helper class to store the sequence ---
+
 class TeamTaunt {
   String speaker1, taunt1;
   String speaker2, taunt2;
@@ -22,14 +15,14 @@ class TeamTaunt {
   }
 }
 
-// --- State machine for the team taunt conversation ---
+
 enum TeamTauntState {
-  IDLE,              // Not checking (or not a full team)
-  SPEAKER_1_DELAY,   // Pause before speaker 1
+  IDLE,              
+  SPEAKER_1_DELAY,   
   SPEAKER_1_TALKING,
-  SPEAKER_2_DELAY,   // Pause before speaker 2
+  SPEAKER_2_DELAY,   
   SPEAKER_2_TALKING,
-  DONE               // Conversation finished
+  DONE               
 }
 
 
@@ -41,45 +34,39 @@ class CharacterBrowser
   Unit partnerCharacter;
   
   boolean readyForBattle = false;
-  boolean isLoading = true; // Flag to show loading screen
-  PImage bgImage; // Variable for the background image
+  boolean isLoading = true; 
+  PImage bgImage; 
   
-  // --- Team Taunt Variables ---
   HashMap<String, ArrayList<TeamTaunt>> teamTaunts;
   TeamTaunt currentTeamTaunt = null;
   TeamTauntState teamTauntState = TeamTauntState.IDLE;
   int teamTauntTimer = 0;
   
-  // --- Timing for the conversation ---
   int delaySpeaker1 = 500;
   int durationSpeaker1 = 3000;
   int delaySpeaker2 = 300;
   int durationSpeaker2 = 3000;
   
-  // --- NEW: Confirm Button Variables ---
   float confirmBtnX, confirmBtnY, confirmBtnW, confirmBtnH;
   
   
-  // Constructor
+ 
   CharacterBrowser() 
   {
     units = new ArrayList<Unit>();
     unitMap = new HashMap<String, Unit>();
     teamTaunts = new HashMap<String, ArrayList<TeamTaunt>>(); 
     
-    // --- NEW: Set up confirm button coordinates ---
+
     confirmBtnW = 150;
     confirmBtnH = 50;
-    confirmBtnX = width - confirmBtnW - 40; // Top-right corner
+    confirmBtnX = width - confirmBtnW - 40; 
     confirmBtnY = 40;
     
     loadUnits();
     loadTeamTaunts("specialTaunt.txt");
   }
   
-  /**
-   * Called by the main GUI thread to load all sprite images.
-   */
   void loadAllSpriteImages() {
     println("--- Threaded image loading started... ---");
     
@@ -92,9 +79,7 @@ class CharacterBrowser
     isLoading = false;
   }
   
-  /**
-   * Populates the list of available units from genericTaunt.txt
-   */
+
   void loadUnits() {
     String[] lines = loadStrings("genericTaunt.txt");
     if (lines == null || lines.length == 0) {
@@ -131,9 +116,6 @@ class CharacterBrowser
     }
   }
   
-  /**
-   * Loads the new specialTaunt.txt format
-   */
   void loadTeamTaunts(String filename) {
     String[] lines = loadStrings(filename);
     
@@ -181,60 +163,47 @@ class CharacterBrowser
     }
   }
   
-  /**
-   * --- HEAVILY MODIFIED ---
-   * Handles the input event from the main GUI.
-   * Now checks for button clicks OR character clicks.
-   */
   void handleMouseClick(int mx, int my, int button) 
   {
-    if (isLoading) return; // Don't allow clicks while loading
-    
-    // --- NEW: Check for confirm button click first ---
+    if (isLoading) return;
+
     if (isMouseOverConfirmButton(mx, my)) {
       handleConfirmClick();
-      return; // Stop processing the click
+      return; 
     }
 
-    // --- This logic is now ONLY for character selection ---
     for (Unit unit : units) {
       if (unit.isMouseOverPortrait(mx, my)) {
         
-        // --- NEW: Reset team taunt state on any new selection ---
         teamTauntState = TeamTauntState.IDLE;
         currentTeamTaunt = null;
         
-        // Stop any currently playing special taunts
         if (mainCharacter != null) mainCharacter.stopTeaser();
         if (partnerCharacter != null) partnerCharacter.stopTeaser();
 
-        
         if (button == LEFT) {
-          if (unit == partnerCharacter) { return; } // No dupes
+          if (unit == partnerCharacter) { return; }
           mainCharacter = unit;
-          unit.playTeaser(); // Play generic taunt
+          unit.playTeaser(); 
         } else if (button == RIGHT) {
-          if (unit == mainCharacter) { return; } // No dupes
+          if (unit == mainCharacter) { return; }
           partnerCharacter = unit;
-          unit.playTeaser(); // Play generic taunt
+          unit.playTeaser(); 
         }
         return; 
       }
     }
   }
 
-  /**
-   * --- NEW FUNCTION ---
-   * This logic is called when the "Confirm" button is clicked.
-   */
+
   void handleConfirmClick() {
-    // Only works if a full team is selected
+
     if (mainCharacter != null && partnerCharacter != null) {
-      // Stop generic taunts
+
       mainCharacter.stopTeaser();
       partnerCharacter.stopTeaser();
       
-      // Find and start the special taunt
+
       currentTeamTaunt = findTeamTaunt();
       
       if (currentTeamTaunt != null) {
@@ -248,17 +217,15 @@ class CharacterBrowser
   }
 
 
-  /**
-   * The main render function.
-   */
+
   void render() 
   {
-    // Draw the background image first
+
     if (bgImage != null) {
-      imageMode(CORNER); // Set imageMode for background
+      imageMode(CORNER); 
       image(bgImage, 0, 0, width, height);
     } else {
-      background(50); // Fallback if image failed
+      background(50); 
     }
   
     for (Unit unit : units) { unit.update(); }
@@ -290,15 +257,12 @@ class CharacterBrowser
     text("Left-Click: Set Main  |  Right-Click: Set Partner", width / 2, 80);
     
     drawSelectionBox();
-    drawConfirmButton(); // <-- NEW: Draw the button
+    drawConfirmButton(); 
     
     updateTeamTauntState();
     drawTeamTaunt(mainAnimX, partnerAnimX, animY);
   }
 
-  /**
-   * This is the core logic for the conversation.
-   */
  void updateTeamTauntState() {
   switch (teamTauntState) {
     case SPEAKER_1_DELAY:
@@ -324,7 +288,6 @@ class CharacterBrowser
         teamTauntState = TeamTauntState.DONE;
         currentTeamTaunt = null;
 
-        // --- NEW: Mark ready for battle after taunt ends ---
         readyForBattle = true;
       }
       break;
@@ -335,9 +298,6 @@ class CharacterBrowser
 }
 
 
-  /**
-   * Draws the current part of the conversation
-   */
   void drawTeamTaunt(float mainX, float partnerX, float y) {
     if (currentTeamTaunt == null) {
       return;
@@ -357,9 +317,7 @@ class CharacterBrowser
     }
   }
   
-  /**
-   * Helper to draw text over the correct character
-   */
+
   void drawTauntOverCharacter(String speakerName, String text, float mainX, float partnerX, float y) {
     float xPos = 0;
     
@@ -372,15 +330,13 @@ class CharacterBrowser
       return; 
     }
     
-    fill(255); // White color
+    fill(255); 
     textSize(18);
     textAlign(CENTER, BOTTOM);
     text(text, xPos, y - 100);
   }
 
-  /**
-   * Finds a random team taunt for the currently selected pair.
-   */
+
   TeamTaunt findTeamTaunt() {
     if (mainCharacter == null || partnerCharacter == null) {
       return null;
@@ -395,10 +351,10 @@ class CharacterBrowser
       int randomIndex = int(random(tauntList.size()));
       return tauntList.get(randomIndex);
     }
-    return null; // No taunt found
+    return null;
   }
 
-  // --- Utility functions for drawing GUI ---
+
 
   void drawCharacterName (Unit unit, float x, float y)
   {
@@ -408,33 +364,25 @@ class CharacterBrowser
     text(unit.unitName, x, y + 100);
   }
   
-  /**
-   * --- NEW: Draws the "Confirm" button ---
-   */
   void drawConfirmButton() {
     rectMode(CORNER);
     
-    // Check if button is active
     if (mainCharacter != null && partnerCharacter != null) {
-      fill(0, 200, 0, 200); // Green, active
+      fill(0, 200, 0, 200); 
       stroke(255);
     } else {
-      fill(100, 100, 100, 150); // Greyed out, inactive
+      fill(100, 100, 100, 150);
       stroke(180);
     }
     
-    rect(confirmBtnX, confirmBtnY, confirmBtnW, confirmBtnH, 10); // Rounded corners
+    rect(confirmBtnX, confirmBtnY, confirmBtnW, confirmBtnH, 10); 
     
-    // Draw text on button
     fill(255);
     textSize(20);
     textAlign(CENTER, CENTER);
     text("CONFIRM", confirmBtnX + confirmBtnW / 2, confirmBtnY + confirmBtnH / 2);
   }
 
-  /**
-   * --- NEW: Checks if mouse is over the "Confirm" button ---
-   */
   boolean isMouseOverConfirmButton(float mx, float my) {
     return (mx >= confirmBtnX && mx <= confirmBtnX + confirmBtnW &&
             my >= confirmBtnY && my <= confirmBtnY + confirmBtnH);
@@ -445,11 +393,6 @@ class CharacterBrowser
     float boxHeight = 120;
     float portraitSize = 100;
     
-    // Background is now transparent (as requested)
-    //noStroke();
-    //fill(20, 20, 20, 200);
-    //rect(0, boxY, width, boxHeight);
-    
     float mainBoxX = (width / 2) - 130;
     float partnerBoxX = (width / 2) + 30;
     
@@ -459,7 +402,7 @@ class CharacterBrowser
     text("MAIN", mainBoxX + portraitSize / 2, boxY + 15);
     
     stroke(100);
-    fill(40, 200); // Made fill semi-transparent
+    fill(40, 200);
     rectMode(CORNER);
     rect(mainBoxX, boxY + 25, portraitSize, portraitSize - 10);
     
@@ -473,7 +416,7 @@ class CharacterBrowser
     text("PARTNER", partnerBoxX + portraitSize / 2, boxY + 15);
 
     stroke(100);
-    fill(40, 200); // Made fill semi-transparent
+    fill(40, 200);
     rectMode(CORNER);
     rect(partnerBoxX, boxY + 25, portraitSize, portraitSize - 10);
     

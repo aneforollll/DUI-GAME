@@ -1,4 +1,3 @@
-// An enumeration to track the unit's animation state
 enum AnimationState 
 {
   IDLE,
@@ -7,75 +6,54 @@ enum AnimationState
 
 class Unit 
 {
-  // --- NEW: Health Variables ---
   int currentHealth;
   int maxHealth;
 
-  // --- Portrait Properties ---
-  float portraitX, portraitY; // Position of the portrait
-  PImage portraitImage;       // <-- Static portrait image
-  float portraitScale = 1.0; // <-- Scale for the portrait
+  float portraitX, portraitY; 
+  PImage portraitImage;       
+  float portraitScale = 1.0; 
   
-  // --- Animation Properties ---
   Sprite idleSprite;
   Sprite teaserSprite;
   AnimationState currentState;
   
-  // --- Unit Data ---
   ArrayList<String> taunts;
   String currentTaunt;
   String unitName;
 
-  // Constructor
   Unit(float px, float py, String name) 
   {
     this.unitName = name;
-    this.portraitX = px; // Store the portrait's position
+    this.portraitX = px;
     this.portraitY = py;
     
     this.taunts = new ArrayList<String>();
     this.currentTaunt = "";
     this.currentState = AnimationState.IDLE;
     
-    // Create sprites (but don't load images yet)
     idleSprite = new Sprite(name + "_idle.txt");
     teaserSprite = new Sprite(name + "_teaser.txt");
     
-    // --- NEW: Set health from the idle config ---
     this.maxHealth = idleSprite.getUnitHealth();
     this.currentHealth = this.maxHealth;
     
-    // Set looping properties
     idleSprite.isLoop = true;
-    teaserSprite.isLoop = false; // Teaser plays once
+    teaserSprite.isLoop = false; 
     
-    // Start idle animation by default
     idleSprite.play();
   }
   
-  /**
-   * Loads the actual image data for all sprites.
-   * This MUST be called from the main setup().
-   */
   void loadSpriteImages() {
-    // Load the static portrait from "data/[charactername]/portrait.png"
     portraitImage = loadImage(unitName + "/portrait.png");
     
-    // Load the animation sprites
     idleSprite.loadImageData();
     teaserSprite.loadImageData();
   }
 
-  /**
-   * Adds a taunt to this unit's list of possible taunts.
-   */
   void addTaunt(String taunt) {
     taunts.add(taunt);
   }
   
-  /**
-   * Called by the logic class to start the teaser animation.
-   */
   void playTeaser() {
     currentState = AnimationState.TEASER;
     
@@ -91,9 +69,6 @@ class Unit
     }
   }
 
-  /**
-   * Immediately stops the teaser animation and clears the taunt.
-   */
   void stopTeaser() {
     currentState = AnimationState.IDLE;
     currentTaunt = "";
@@ -103,10 +78,6 @@ class Unit
     idleSprite.play();
   }
 
-  /**
-   * Called every frame by the logic class.
-   * Checks if the teaser animation is finished.
-   */
   void update() {
     if (currentState == AnimationState.TEASER) {
       if (teaserSprite.isFinished()) {
@@ -115,9 +86,6 @@ class Unit
     }
   }
 
-  /**
-   * Checks if a mouse click is over this unit's portrait.
-   */
   boolean isMouseOverPortrait(int mx, int my) {
     if (portraitImage == null) return false;
     
@@ -128,11 +96,6 @@ class Unit
             my >= portraitY - h && my <= portraitY + h);
   }
 
-  /**
-   * Draws the unit's static portrait in the selection grid.
-   * --- THIS IS THE FIX ---
-   * It no longer draws a grey rect() behind the image.
-   */
   void drawPortrait() {
     if (portraitImage == null) return;
     
@@ -143,9 +106,6 @@ class Unit
     image(portraitImage, portraitX, portraitY, w, h);
   }
 
-  /**
-   * Draws the unit's main animation at a specific screen location.
-   */
   void drawAnimation(float x, float y) {
     if (currentState == AnimationState.TEASER) {
       teaserSprite.renderNext(x, y);
@@ -154,16 +114,13 @@ class Unit
     }
   }
 
-  /**
-   * Draws the unit's taunt message above its animation.
-   */
   void drawTaunt(float animX, float animY) {
     if (currentTaunt == null || currentTaunt.isEmpty()) {
       return; 
     }
     
     if (currentState == AnimationState.TEASER) {
-      fill(255); // White color
+      fill(255);
       textSize(16);
       textAlign(CENTER, BOTTOM);
       text(currentTaunt, animX, animY - 100);
